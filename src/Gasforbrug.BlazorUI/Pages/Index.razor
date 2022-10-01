@@ -1,27 +1,57 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage BrowserStorage
 
 <PageTitle>Mit gasforbrug</PageTitle>
 
 <h1>Mit gasforbrug</h1>
-
+<h2>Aflæs</h2>
 <EditForm Model="@reading" OnValidSubmit="@AddReading">
     <InputDate id="date" @bind-Value="reading.Date" />
     <InputNumber id="value" @bind-Value="reading.Value" />
     <button id="add-reading" type="submit">Tilføj aflæsning</button>
 </EditForm>
 
+<h2>Tidligere aflæst</h2>
+<table>
+    @foreach(var item in allReadings) 
+    {
+    <tr>
+        <td>@item.Date.ToString("d. MMM")</td>
+        <td><span style="margin-left: 3em">@item.Value.ToString("N3")</span><span> m^3</span></td>
+    </tr>
+    }
+</table>
+
 @code {
     private Reading reading = new() { Date = DateTime.Now };
+    private List<Reading> allReadings = new();
 
-    private void AddReading()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender)
+            return;
+
+        var fromStorage = await BrowserStorage.GetAsync<List<Reading>>("readings");
+        allReadings = fromStorage.Success ? fromStorage.Value : new List<Reading>();
+        StateHasChanged();
+    }
+
+    private async Task AddReading()
+    {
+        allReadings.Add(reading);
+        await BrowserStorage.SetAsync("readings", allReadings);
+
+        if (reading.Date == default || reading.Value == default)
+            throw new Exception("This is bad!");
+
         Console.WriteLine($"Date: {reading.Date.ToString()} - Value: {reading.Value}");
         reading = new() { Date = DateTime.Now };
     }
 
-    private class Reading
+    public sealed class Reading
     {
-        internal DateTime Date { get; set; }
-        internal decimal Value { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Value { get; set; }
     }
 }
