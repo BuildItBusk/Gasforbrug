@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - main
-    paths:
-    - '!README.md'    # Don't rebuild due to changes in Readme
     
   workflow_dispatch:
 
