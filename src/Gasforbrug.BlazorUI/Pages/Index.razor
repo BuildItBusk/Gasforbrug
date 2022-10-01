@@ -1,9 +1,27 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Mit gasforbrug</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Mit gasforbrug</h1>
 
-Welcome to your new app.
+<EditForm Model="@reading" OnValidSubmit="@AddReading">
+    <InputDate id="date" @bind-Value="reading.Date" />
+    <InputNumber id="value" @bind-Value="reading.Value" />
+    <button id="add-reading" type="submit">Tilføj aflæsning</button>
+</EditForm>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private Reading reading = new() { Date = DateTime.Now };
+
+    private void AddReading()
+    {
+        Console.WriteLine($"Date: {reading.Date.ToString()} - Value: {reading.Value}");
+        reading = new() { Date = DateTime.Now };
+    }
+
+    private class Reading
+    {
+        internal DateTime Date { get; set; }
+        internal decimal Value { get; set; }
+    }
+}
