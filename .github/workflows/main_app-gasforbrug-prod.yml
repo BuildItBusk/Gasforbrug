@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+    
   workflow_dispatch:
 
 jobs:
@@ -23,10 +24,10 @@ jobs:
           include-prerelease: true
 
       - name: Build with dotnet
-        run: dotnet build .\src\Gasforbrug.WebUI\ --configuration Release
+        run: dotnet build .\src\Gasforbrug.BlazorUI\ --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -o ${{env.DOTNET_ROOT}}\myapp\src\Gasforbrug.WebUI\ --configuration Release
+        run: dotnet publish .\src\Gasforbrug.BlazorUI\ -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
