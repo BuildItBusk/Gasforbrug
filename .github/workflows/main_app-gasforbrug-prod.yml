@@ -27,7 +27,7 @@ jobs:
         run: dotnet build .\src\Gasforbrug.BlazorUI\ --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish .\src\Gasforbrug.BlazorUI\ --configuration Release
+        run: dotnet publish .\src\Gasforbrug.BlazorUI\ -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
