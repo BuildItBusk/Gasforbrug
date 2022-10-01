@@ -6,22 +6,40 @@
 
 <h1>Mit gasforbrug</h1>
 <h2>Aflæs</h2>
-<EditForm Model="@reading" OnValidSubmit="@AddReading">
-    <InputDate id="date" @bind-Value="reading.Date" />
-    <InputNumber id="value" @bind-Value="reading.Value" />
+<EditForm Model="@reading" OnValidSubmit="@AddReading" class="mb-5">
+    <p>
+        <label for="Date">
+            Dato:<br />
+            <InputDate id="date" @bind-Value="reading.Date" />
+        </label>
+    </p>
+    <p>
+        <label for="Value">
+            Aflæst værdi: <br />
+            <InputNumber id="value" @bind-Value="reading.Value" />
+        </label>
+    </p>
     <button id="add-reading" type="submit">Tilføj aflæsning</button>
 </EditForm>
 
 <h2>Tidligere aflæst</h2>
-<table>
-    @foreach(var item in allReadings) 
-    {
-    <tr>
-        <td>@item.Date.ToString("d. MMM")</td>
-        <td><span style="margin-left: 3em">@item.Value.ToString("N3")</span><span> m^3</span></td>
-    </tr>
-    }
-</table>
+<div class="container m-lg-5">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Dato</th>
+                <th scope="col" class="text-end">m<sup>3</sup></th>
+            </tr>
+        </thead>
+        @foreach(var item in allReadings) 
+        {
+        <tr>
+            <td>@item.Date.ToString("d. MMM")</td>
+            <td class="text-end">@item.Value.ToString("N3")</td>
+        </tr>
+        }
+    </table>
+</div>
 
 @code {
     private Reading reading = new() { Date = DateTime.Now };
