@@ -51,7 +51,11 @@
             return;
 
         var fromStorage = await BrowserStorage.GetAsync<List<Reading>>("readings");
-        allReadings = fromStorage.Success ? fromStorage.Value : new List<Reading>();
+        var result  = fromStorage.Success ? fromStorage.Value : new List<Reading>();
+
+        if (result is not null)
+            allReadings = result;
+
         StateHasChanged();
     }
 
