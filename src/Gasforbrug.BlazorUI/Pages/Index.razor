@@ -1,28 +1,46 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.ComponentModel.DataAnnotations
 @inject ProtectedLocalStorage BrowserStorage
 
 <PageTitle>Mit gasforbrug</PageTitle>
 
 <h1>Mit gasforbrug</h1>
 <h2>Aflæs</h2>
-<EditForm Model="@reading" OnValidSubmit="@AddReading" class="mb-5">
+<Validations @ref="validations" Mode="ValidationMode.Manual" Model="@reading">
     <p>
         <label for="Date">
             Dato:<br />
-            <InputDate id="date" @bind-Value="reading.Date" />
+            <Validation>
+                <Field>
+                    <DateEdit @bind-Date="reading.Date">
+                        <Feedback>
+                            <ValidationError />
+                        </Feedback>
+                    </DateEdit>
+                </Field>
+            </Validation>
         </label>
     </p>
     <p>
-        <label for="Value">
+        <label for="reading">
             Aflæst værdi: <br />
-            <InputNumber id="value" @bind-Value="reading.Value" />
+            <Validation>
+                <Field>
+                    <NumericEdit TValue="decimal" @bind-Value="reading.Value">
+                        <Feedback>
+                            <ValidationError />
+                        </Feedback>
+                    </NumericEdit>
+                </Field>
+            </Validation>
         </label>
     </p>
-    <button id="add-reading" type="submit">Tilføj aflæsning</button>
-</EditForm>
+</Validations>
 
-<h2>Tidligere aflæst</h2>
+    <Button Color="Color.Primary" Type="ButtonType.Submit" Clicked="@AddReading" id="add-reading">Tilføj aflæsning</Button>
+
+<h2 class="mt-5">Tidligere aflæst</h2>
 
 <Modal @ref="modalRef">
     <ModalContent Centered>
@@ -54,9 +72,9 @@
         @foreach(var item in allReadings) 
         {
         <tr>
-            <td>@item.Date.ToString("d. MMM")</td>
-            <td class="text-end">@item.Value.ToString("N3")</td>
-             <td><Icon Name="IconName.Remove" Clicked="() => ShowModal(item)" /></td>
+            <td class="align-middle">@item.Date.ToString("d. MMM")</td>
+            <td class="text-end align-middle">@item.Value.ToString("N3")</td>
+            <td><Icon Name="IconName.Delete" Clicked="() => ShowModal(item)" /></td>
         </tr>
         }
     </table>
@@ -94,16 +112,21 @@
         StateHasChanged();
     }
 
+
+    Validations? validations = new();        
     private async Task AddReading()
     {
-        allReadings.Add(reading);
-        await SaveToBrowserStorage();
+        if (validations is null)
+            return;
 
-        if (reading.Date == default || reading.Value == default)
-            throw new Exception("This is bad!");
-
-        reading = new() { Date = DateTime.Now };
+        if (await validations.ValidateAll())
+        {
+            allReadings.Add(reading);
+            await SaveToBrowserStorage();
+            reading = new() { Date = DateTime.Now };
+        }
     }
+        
 
     private async Task DeleteReading()
     {
@@ -120,7 +143,12 @@
     public sealed class Reading
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+
+        [Required]
         public DateTime Date { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Skal være et positivt tal.")]
         public decimal Value { get; set; }
     }
 }
