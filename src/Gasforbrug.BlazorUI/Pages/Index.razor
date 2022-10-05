@@ -23,12 +23,32 @@
 </EditForm>
 
 <h2>Tidligere aflæst</h2>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Slet aflæsning</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <p>
+                Er du sikker på du vil slette denne aflæsning? Det er ikke muligt at gendanne den efterfølgende.
+            </p>           
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Fortryd</Button>
+            <Button Color="Color.Primary" Clicked="@DeleteReading">Slet</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
 <div class="container m-lg-5">
     <table class="table">
         <thead>
             <tr>
                 <th scope="col">Dato</th>
                 <th scope="col" class="text-end">m<sup>3</sup></th>
+                <th></th>
             </tr>
         </thead>
         @foreach(var item in allReadings) 
@@ -36,6 +56,7 @@
         <tr>
             <td>@item.Date.ToString("d. MMM")</td>
             <td class="text-end">@item.Value.ToString("N3")</td>
+             <td><Icon Name="IconName.Remove" Clicked="() => ShowModal(item)" /></td>
         </tr>
         }
     </table>
@@ -44,6 +65,20 @@
 @code {
     private Reading reading = new() { Date = DateTime.Now };
     private List<Reading> allReadings = new();
+    private Modal? modalRef;
+    private Reading? markedForDelete = null; 
+
+    private Task ShowModal(Reading? reading)
+    {
+        markedForDelete = reading;
+        return modalRef?.Show() ?? Task.CompletedTask;
+    }
+
+    private Task HideModal()
+    {
+        markedForDelete = null;
+        return modalRef?.Hide() ?? Task.CompletedTask;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -62,17 +97,29 @@
     private async Task AddReading()
     {
         allReadings.Add(reading);
-        await BrowserStorage.SetAsync("readings", allReadings);
+        await SaveToBrowserStorage();
 
         if (reading.Date == default || reading.Value == default)
             throw new Exception("This is bad!");
 
-        Console.WriteLine($"Date: {reading.Date.ToString()} - Value: {reading.Value}");
         reading = new() { Date = DateTime.Now };
     }
 
+    private async Task DeleteReading()
+    {
+        if (markedForDelete is not null)
+            allReadings.Remove(markedForDelete);
+
+        await SaveToBrowserStorage();
+
+        modalRef?.Hide();
+    }
+
+    private async Task SaveToBrowserStorage()  => await BrowserStorage.SetAsync("readings", allReadings);
+
     public sealed class Reading
     {
+        public Guid Id { get; set; } = Guid.NewGuid();
         public DateTime Date { get; set; }
         public decimal Value { get; set; }
     }
