@@ -1,0 +1,105 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using static Gasforbrug.BlazorUI.Pages.Index
+@inject ProtectedLocalStorage BrowserStorage
+@inject NotifierService Notifier
+
+<h2 class="mt-5">Tidligere aflæst</h2>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Slet aflæsning</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <p>
+                Er du sikker på du vil slette denne aflæsning? Det er ikke muligt at gendanne den efterfølgende.
+            </p>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Fortryd</Button>
+            <Button Color="Color.Primary" Clicked="@DeleteReading">Slet</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<div class="container m-lg-5">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Dato</th>
+                <th scope="col" class="text-end">m<sup>3</sup></th>
+                <th></th>
+            </tr>
+        </thead>
+        @foreach (var item in allReadings)
+        {
+            <tr>
+                <td class="align-middle">@item.Date.ToString("d. MMM")</td>
+                <td class="text-end align-middle">@item.Value.ToString("N3")</td>
+                <td><Icon Name="IconName.Delete" Clicked="() => ShowModal(item)" /></td>
+            </tr>
+        }
+    </table>
+</div>
+
+@code {
+    private List<Reading> allReadings = new();
+    private Modal? modalRef;
+    private Reading? markedForDelete = null;
+
+    protected override void OnInitialized()
+    {
+        Notifier.Notify += OnNotify;
+    }
+
+    private async Task OnNotify(string key, int value)
+    {
+        await FetchReadings();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await FetchReadings();
+    }
+
+    private async Task FetchReadings()
+    {
+        var fromStorage = await BrowserStorage.GetAsync<List<Reading>>("readings");
+        var result = fromStorage.Success ? fromStorage.Value : new List<Reading>();
+
+        if (result is not null)
+            allReadings = result;
+
+        StateHasChanged();
+    }
+
+    private Task ShowModal(Reading? reading)
+    {
+        markedForDelete = reading;
+        return modalRef?.Show() ?? Task.CompletedTask;
+    }
+
+    private Task HideModal()
+    {
+        markedForDelete = null;
+        return modalRef?.Hide() ?? Task.CompletedTask;
+    }
+
+    private async Task DeleteReading()
+    {
+        if (markedForDelete is not null)
+            allReadings.Remove(markedForDelete);
+
+        await SaveToBrowserStorage();
+
+        modalRef?.Hide();
+    }
+
+    private async Task SaveToBrowserStorage() => await BrowserStorage.SetAsync("readings", allReadings);
+
+}
