@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using Gasforbrug.BlazorUI.Data
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using System.ComponentModel.DataAnnotations
 @inject ProtectedLocalStorage BrowserStorage
@@ -44,9 +45,9 @@
 <ReadingsListView />
 
 @code {
-    private Reading reading = new() { Date = DateTime.Now };
-    private List<Reading> allReadings = new();
-    private Reading? markedForDelete = null; 
+    private ReadingStorageModel reading = new() { Date = DateTime.Now };
+    private List<ReadingStorageModel> allReadings = new();
+    private ReadingStorageModel? markedForDelete = null;
     private Validations? validations = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -54,8 +55,8 @@
         if (!firstRender)
             return;
 
-        var fromStorage = await BrowserStorage.GetAsync<List<Reading>>("readings");
-        var result  = fromStorage.Success ? fromStorage.Value : new List<Reading>();
+        var fromStorage = await BrowserStorage.GetAsync<List<ReadingStorageModel>>("readings");
+        var result = fromStorage.Success ? fromStorage.Value : new List<ReadingStorageModel>();
 
         if (result is not null)
             allReadings = result;
@@ -78,16 +79,4 @@
     }
         
     private async Task SaveToBrowserStorage()  => await BrowserStorage.SetAsync("readings", allReadings);
-
-    public sealed class Reading
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        [Required]
-        public DateTime Date { get; set; }
-
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Skal være et positivt tal.")]
-        public decimal Value { get; set; }
-    }
 }
