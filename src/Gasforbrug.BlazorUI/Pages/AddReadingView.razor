@@ -1,0 +1,80 @@
+﻿@using Gasforbrug.BlazorUI.Data
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.ComponentModel.DataAnnotations
+@inject ProtectedLocalStorage BrowserStorage
+@inject NotifierService Notifier
+
+<h2>Aflæs</h2>
+<Validations @ref="validations" Mode="ValidationMode.Manual" Model="@reading">
+    <p>
+        <label for="Date">
+            Dato:<br />
+            <Validation>
+                <Field>
+                    <DateEdit @bind-Date="reading.Date">
+                        <Feedback>
+                            <ValidationError />
+                        </Feedback>
+                    </DateEdit>
+                </Field>
+            </Validation>
+        </label>
+    </p>
+    <p>
+        <label for="reading">
+            Aflæst værdi: <br />
+            <Validation>
+                <Field>
+                    <NumericEdit TValue="decimal" @bind-Value="reading.Value">
+                        <Feedback>
+                            <ValidationError />
+                        </Feedback>
+                    </NumericEdit>
+                </Field>
+            </Validation>
+        </label>
+    </p>
+</Validations>
+
+<Button Color="Color.Primary" Type="ButtonType.Submit" Clicked="@AddReading" id="add-reading">Tilføj aflæsning</Button>
+
+@code {
+    private ReadingStorageModel reading = new() { Date = DateTime.Now };
+    private List<ReadingStorageModel> allReadings = new();
+    private Validations? validations = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await FetchReadings();
+    }
+
+    private async Task FetchReadings()
+    {
+        var fromStorage = await BrowserStorage.GetAsync<List<ReadingStorageModel>>("readings");
+        var result = fromStorage.Success ? fromStorage.Value : new List<ReadingStorageModel>();
+
+        if (result is not null)
+            allReadings = result;
+
+        StateHasChanged();
+    }
+
+    private async Task AddReading()
+    {
+        if (validations is null)
+            return;
+
+        if (await validations.ValidateAll())
+        {
+            allReadings.Add(reading);
+            await SaveToBrowserStorage();
+            await Notifier.Update("readingAdded", 0);
+            reading = new() { Date = DateTime.Now };
+        }
+    }
+
+    private async Task SaveToBrowserStorage() => await BrowserStorage.SetAsync("readings", allReadings);
+}
