@@ -1,8 +1,7 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using Gasforbrug.BlazorUI.Data
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@inject ProtectedLocalStorage BrowserStorage
+﻿@using Gasforbrug.BlazorUI.Data
+@using Gasforbrug.BlazorUI.Infrastructure
 @inject NotifierService Notifier
+@inject ReadingRepository BrowserStorage
 
 <h2 class="mt-5">Tidligere aflæst</h2>
 
@@ -56,7 +55,8 @@
 
     private async Task OnNotify(string key, int value)
     {
-        await FetchReadings();
+        allReadings = await BrowserStorage.Get();
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -64,17 +64,7 @@
         if (!firstRender)
             return;
 
-        await FetchReadings();
-    }
-
-    private async Task FetchReadings()
-    {
-        var fromStorage = await BrowserStorage.GetAsync<List<ReadingStorageModel>>("readings");
-        var result = fromStorage.Success ? fromStorage.Value : new List<ReadingStorageModel>();
-
-        if (result is not null)
-            allReadings = result;
-
+        allReadings = await BrowserStorage.Get();
         StateHasChanged();
     }
 
@@ -93,13 +83,8 @@
     private async Task DeleteReading()
     {
         if (markedForDelete is not null)
-            allReadings.Remove(markedForDelete);
-
-        await SaveToBrowserStorage();
+            await BrowserStorage.Remove(markedForDelete.Id);
 
         modalRef?.Hide();
     }
-
-    private async Task SaveToBrowserStorage() => await BrowserStorage.SetAsync("readings", allReadings);
-
 }

@@ -1,4 +1,4 @@
-﻿namespace Gasforbrug.BlazorUI.Pages
+﻿namespace Gasforbrug.BlazorUI
 {
     public class NotifierService
     {

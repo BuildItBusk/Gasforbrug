@@ -1,16 +1,18 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
-using Gasforbrug.BlazorUI.Pages;
+using Gasforbrug.BlazorUI;
+using Gasforbrug.BlazorUI.Infrastructure;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 {
     // Add services to the container.
     builder.Services.AddRazorPages();
     builder.Services.AddServerSideBlazor();
-    builder.Services.AddSingleton<NotifierService>();
+    builder.Services.AddScoped<NotifierService>();
+    builder.Services.AddScoped<ProtectedLocalStorage>();
+    builder.Services.AddScoped<ReadingRepository>();
     builder.Services
         .AddBlazorise(options =>
         {
