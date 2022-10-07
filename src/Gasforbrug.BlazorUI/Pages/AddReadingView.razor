@@ -24,11 +24,11 @@
             Aflæst værdi: <br />
             <Validation>
                 <Field>
-                    <NumericEdit TValue="decimal" Culture="en-US" @bind-Value="reading.Value">
+                    <NumericPicker DecimalSeparator="," Decimals="3" Min="0" SelectAllOnFocus="true" @bind-Value="reading.Value">
                         <Feedback>
                             <ValidationError />
                         </Feedback>
-                    </NumericEdit>
+                    </NumericPicker>
                 </Field>
             </Validation>
         </label>
