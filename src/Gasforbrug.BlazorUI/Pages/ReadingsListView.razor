@@ -29,15 +29,26 @@
             <tr>
                 <th scope="col">Dato</th>
                 <th scope="col" class="text-end">m<sup>3</sup></th>
+                <th scope="col" class="text-end">
+                    <span class="oi oi-arrow-circle-top" data-toggle="tooltip" title="Siden sidste aflæsning"></span>
+                </th>
                 <th></th>
             </tr>
         </thead>
-        @foreach (var item in allReadings)
+        @for (int i = 0; i < allReadings.Count; i++)
         {
+            var reading = allReadings[i];
+            var date = reading.Date.ToString("d. MMM");
+            var value = reading.Value.ToString("N3");
+            var diff = i > 0 ?
+            (reading.Value - allReadings[i - 1].Value).ToString("N3") :
+                string.Empty;
+
             <tr>
-                <td class="align-middle">@item.Date.ToString("d. MMM")</td>
-                <td class="text-end align-middle">@item.Value.ToString("N3")</td>
-                <td><Icon Name="IconName.Delete" Clicked="() => ShowModal(item)" /></td>
+                <td class="align-middle">@date</td>
+                <td class="text-end align-middle">@value</td>
+                <td class="text-end align-middle">@diff</td>
+                <td><Icon Name="IconName.Delete" Clicked="() => ShowModal(reading)" /></td>
             </tr>
         }
     </table>
