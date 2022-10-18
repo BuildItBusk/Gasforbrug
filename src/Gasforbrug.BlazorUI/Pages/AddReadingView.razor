@@ -6,32 +6,38 @@
 <h2>Aflæs</h2>
 <Validations @ref="validations" Mode="ValidationMode.Manual" Model="@reading">
     <p>
-        <label for="Date">
-            Dato:<br />
-            <Validation>
-                <Field>
-                    <DateEdit @bind-Date="reading.Date">
-                        <Feedback>
-                            <ValidationError />
-                        </Feedback>
-                    </DateEdit>
-                </Field>
-            </Validation>
-        </label>
+        <label for="Time" class="col-form-label-sm">Dato:</label>
+        <Validation>
+            <Field>
+                <DateEdit @bind-Date="reading.Date">
+                    <Feedback>
+                        <ValidationError />
+                    </Feedback>
+                </DateEdit>
+            </Field>
+        </Validation>
     </p>
     <p>
-        <label for="reading">
-            Aflæst værdi: <br />
-            <Validation>
-                <Field>
-                    <NumericPicker DecimalSeparator="," Decimals="3" Min="0" SelectAllOnFocus="true" @bind-Value="reading.Value">
-                        <Feedback>
-                            <ValidationError />
-                        </Feedback>
-                    </NumericPicker>
-                </Field>
-            </Validation>
-        </label>
+        <label for="Time" class="col-form-label-sm">Klokkeslæt:</label>
+        <Field>
+            <TimeEdit @bind-Time="Time">
+                <Feedback>
+                    <ValidationError />
+                </Feedback>
+            </TimeEdit>
+        </Field>
+    </p>
+    <p>
+        <label for="reading" class="col-form-label-sm">Kubikmeter:</label>
+        <Validation>
+            <Field>
+                <NumericPicker DecimalSeparator="," Decimals="3" Min="0" SelectAllOnFocus="true" @bind-Value="reading.Value">
+                    <Feedback>
+                        <ValidationError />
+                    </Feedback>
+                </NumericPicker>
+            </Field>
+        </Validation>
     </p>
 </Validations>
 
@@ -40,6 +46,17 @@
 @code {
     private ReadingStorageModel reading = new() { Date = DateTime.Now };
     private Validations? validations = new();
+
+    private TimeSpan Time
+    {
+        get => reading.Date.TimeOfDay;
+        set
+        {
+            var date = reading.Date.Date.Ticks;
+            var time = value.Ticks;
+            reading.Date = new DateTime(date + time);  
+        }
+    }
 
     private async Task AddReading()
     {
