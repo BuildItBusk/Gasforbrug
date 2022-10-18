@@ -9,7 +9,7 @@
         <label for="Time" class="col-form-label-sm">Dato:</label>
         <Validation>
             <Field>
-                <DateEdit @bind-Date="reading.Date">
+                <DateEdit @bind-Date="reading.Date" Class="text-right">
                     <Feedback>
                         <ValidationError />
                     </Feedback>
@@ -20,7 +20,7 @@
     <p>
         <label for="Time" class="col-form-label-sm">Klokkeslæt:</label>
         <Field>
-            <TimeEdit @bind-Time="Time">
+            <TimeEdit @bind-Time="Time" Class="text-right">
                 <Feedback>
                     <ValidationError />
                 </Feedback>
@@ -31,7 +31,7 @@
         <label for="reading" class="col-form-label-sm">Kubikmeter:</label>
         <Validation>
             <Field>
-                <NumericPicker DecimalSeparator="," Decimals="3" Min="0" SelectAllOnFocus="true" @bind-Value="reading.Value">
+                <NumericPicker DecimalSeparator="," Decimals="3" Min="0" SelectAllOnFocus="true" @bind-Value="reading.Value" Class="text-right">
                     <Feedback>
                         <ValidationError />
                     </Feedback>
